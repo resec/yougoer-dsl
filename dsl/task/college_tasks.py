@@ -244,4 +244,30 @@ class ColEthnicityStateTask(CollegeFetchTask):
             scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
 
 
-class
+class ColGenderTask(CollegeFetchTask):
+    '''
+    tab: 学生情况
+    subtab: 学生统计
+    selecttab: 性别
+    '''
+    tkey = 'ColGenderTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFTOTLM, ai.EFTOTLW \
+        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+
+
+class ColGenderStateTask(CollegeFetchTask):
+    '''
+    tab: 学生情况
+    subtab: 学生统计
+    selecttab: 性别 同州平均
+    '''
+    tkey = 'ColGenderStateTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT sdet.*, sdic.VALUEEN \
+            FROM stati_details AS sdet, stati_category as scat, stati_dict as sdic where sdet.CATEGORY_ID in (\
+            ELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
+            SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
+            scat.FTYPEID = 26) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
