@@ -244,7 +244,7 @@ class ColEthnicityStateTask(CollegeFetchTask):
             scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
 
 
-class ColGenderTask(CollegeFetchTask):
+class ColGenderTask(CollegeBasicTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -268,6 +268,36 @@ class ColGenderStateTask(CollegeFetchTask):
     def __init__(self):
         self.mysql_template = "SELECT sdet.*, sdic.VALUEEN \
             FROM stati_details AS sdet, stati_category as scat, stati_dict as sdic where sdet.CATEGORY_ID in (\
-            ELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
+            SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
             SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
             scat.FTYPEID = 26) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
+
+
+class ColMajorNumTask(CollegeBasicTask):
+    '''
+    tab: 专业
+    subtab: 专业情况
+    selecttab: 专业数
+    '''
+    tkey = 'ColMajorNumTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT COUNT(c_major.MAJOR) as MAJORNUM FROM (\
+            SELECT ccomp.CIPCODE as MAJOR FROM YOUGOER.college_comp as ccomp\
+            WHERE ccomp.UNITID = %(UNITID)s and ccomp.CIPCODE != 99\
+            GROUP BY ccomp.CIPCODE) as c_major;"
+
+
+class ColMajorTask(CollegeFetchTask):
+    '''
+    tab: 专业
+    subtab: 专业情况
+    selecttab: 专业详细信息
+    '''
+    tkey = 'ColMajorTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT CIPCODE, sum(CTOTALT) as CTOTALT\
+            FROM YOUGOER.college_comp as ccomp\
+            WHERE ccomp.UNITID = %(UNITID)s and ccomp.CIPCODE != 99\
+            GROUP BY ccomp.CIPCODE ORDER BY CTOTALT;"
