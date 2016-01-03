@@ -2,9 +2,12 @@ import dsl
 
 import tornado.ioloop
 import tornado.web
+import tornado.httpserver
+from tornado.options import define, options
 
 import os.path
 
+define("port", default=8008, help="run on the given port", type=int)
 
 class BaseHandler(tornado.web.RequestHandler):
 
@@ -37,6 +40,11 @@ application = tornado.web.Application(
     debug=True
     )
 
-if __name__ == "__main__":
-    application.listen(8008)
+def main():
+    tornado.options.parse_command_line()
+    http_server = tornado.httpserver.HTTPServer(application)
+    http_server.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
+
+if __name__ == "__main__":
+    main()
