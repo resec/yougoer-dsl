@@ -171,3 +171,11 @@ class CollegeCompareTask(CollegeBasicTask):
         self.mysql_template = "SELECT ff.LATITUDE, ff.LONGITUD, ff.WEBADDR, ai.ADMSSN_PERC\
             FROM college_ff as ff, college_ai as ai\
             WHERE ai.UNITID = ff.UNITID and ff.UNITID = %(UNITID)s;"
+
+
+class ColLocateTask(CollegeBasicTask):
+    tkey = 'ColLocateTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT ff.LATITUDE, ff.LONGITUD, ff.STABBR, ff.CITY, ff.ADDR, ff.GENTELE \
+        FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
