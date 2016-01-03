@@ -2,7 +2,7 @@
 from dsl.took import Step
 
 
-class CollegeBasicTask(object):
+class UnivBasicTask(object):
     '''
     Basic College Task
     '''
@@ -20,7 +20,7 @@ class CollegeBasicTask(object):
         yield mysql_syn_step
 
 
-class CollegeFetchTask(object):
+class UnivFetchTask(object):
     '''
     Basic College Task
     '''
@@ -38,15 +38,16 @@ class CollegeFetchTask(object):
         yield mysql_syn_step
 
 
-class CollegeNameTask(CollegeBasicTask):
+class UnivNameTask(UnivFetchTask):
 
     tkey = 'CollegeNameTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT cn.NAME FROM college_name as cn WHERE cn.UNITID = %(UNITID)s and cn.LANG = 'EN'"
+        self.mysql_template = "SELECT cn.NAME FROM college_name as cn\
+            WHERE cn.UNITID = %(UNITID)s and (cn.LANG = 'EN' or cn.LANG = 'CN')"
 
 
-class CollegeSlugTask(CollegeBasicTask):
+class UnivSlugTask(UnivBasicTask):
 
     tkey = 'CollegeSlugTask'
 
@@ -54,7 +55,7 @@ class CollegeSlugTask(CollegeBasicTask):
         self.mysql_template = "SELECT cn.UNITID FROM college_name as cn WHERE cn.SLUG = %(SLUG)s"
 
 
-class UnivLocateTask(CollegeBasicTask):
+class UnivLocateTask(UnivBasicTask):
     '''
     tab: 位置
     subtab: 地图
@@ -66,7 +67,7 @@ class UnivLocateTask(CollegeBasicTask):
         FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
 
 
-class UnivEnrollmentTask(CollegeBasicTask):
+class UnivEnrollmentTask(UnivBasicTask):
     '''
     tab: 学生情况
     subtab: 招生明细
@@ -78,7 +79,7 @@ class UnivEnrollmentTask(CollegeBasicTask):
         FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class UnivEthnicityTask(CollegeBasicTask):
+class UnivEthnicityTask(UnivBasicTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -91,7 +92,7 @@ class UnivEthnicityTask(CollegeBasicTask):
         FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class UnivEthnicityStateTask(CollegeFetchTask):
+class UnivEthnicityStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -107,7 +108,7 @@ class UnivEthnicityStateTask(CollegeFetchTask):
             scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
 
 
-class UnivGenderTask(CollegeBasicTask):
+class UnivGenderTask(UnivBasicTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -120,7 +121,7 @@ class UnivGenderTask(CollegeBasicTask):
         FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class UnivGenderStateTask(CollegeFetchTask):
+class UnivGenderStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -136,7 +137,7 @@ class UnivGenderStateTask(CollegeFetchTask):
             scat.FTYPEID = 26) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
 
 
-class UnivMajorNumTask(CollegeBasicTask):
+class UnivMajorNumTask(UnivBasicTask):
     '''
     tab: 专业
     subtab: 专业情况
@@ -151,7 +152,7 @@ class UnivMajorNumTask(CollegeBasicTask):
             GROUP BY ccomp.CIPCODE) as c_major;"
 
 
-class UnivMajorTask(CollegeFetchTask):
+class UnivMajorTask(UnivFetchTask):
     '''
     tab: 专业
     subtab: 专业情况
@@ -166,7 +167,7 @@ class UnivMajorTask(CollegeFetchTask):
             GROUP BY ccomp.CIPCODE ORDER BY CTOTALT;"
 
 
-class UnivTuitionOnCampusTask(CollegeBasicTask):
+class UnivTuitionOnCampusTask(UnivBasicTask):
     '''
     tab: 学费
     subtab: 基本费用
@@ -179,7 +180,7 @@ class UnivTuitionOnCampusTask(CollegeBasicTask):
         FROM college_tuition as tui WHERE tui.UNITID=%(UNITID)s;"
 
 
-class UnivTuitionOffCampusTask(CollegeBasicTask):
+class UnivTuitionOffCampusTask(UnivBasicTask):
     '''
     tab: 学费
     subtab: 基本费用
@@ -192,7 +193,7 @@ class UnivTuitionOffCampusTask(CollegeBasicTask):
         FROM college_tuition as tui WHERE tui.UNITID=%(UNITID)s;"
 
 
-class UnivTuitionCompareTask(CollegeFetchTask):
+class UnivTuitionCompareTask(UnivFetchTask):
     '''
     tab: 学费
     subtab: 基本费用
@@ -212,7 +213,7 @@ class UnivTuitionCompareTask(CollegeFetchTask):
             and scat.REGON = viewd.ID;"
 
 
-class UnivAdmiBasicTask(CollegeBasicTask):
+class UnivAdmiBasicTask(UnivBasicTask):
     '''
     tab: 录取
     subtab: 录取情况
@@ -224,7 +225,7 @@ class UnivAdmiBasicTask(CollegeBasicTask):
             FROM college_ai as cai WHERE cai.UNITID=%(UNITID)s;"
 
 
-class UnivAdmiReqTask(CollegeBasicTask):
+class UnivAdmiReqTask(UnivBasicTask):
     '''
     tab: 录取
     subtab: 录取标准
@@ -236,7 +237,7 @@ class UnivAdmiReqTask(CollegeBasicTask):
         FROM college_ai as cai WHERE cai.UNITID=%(UNITID)s;"
 
 
-class UnivAdmiUrlTask(CollegeBasicTask):
+class UnivAdmiUrlTask(UnivBasicTask):
     '''
     tab: 录取
     subtab: 申请信息
@@ -247,7 +248,7 @@ class UnivAdmiUrlTask(CollegeBasicTask):
             FROM college_ff as ff WHERE ff.UNITID=%(UNITID)s;"
 
 
-class UnivAdmiSticTask(CollegeFetchTask):
+class UnivAdmiSticTask(UnivFetchTask):
     '''
     tab: 录取
     subtab: 录取情况 - 统计信息
