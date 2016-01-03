@@ -203,7 +203,7 @@ class ColLocateTask(CollegeBasicTask):
         FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
 
 
-class ColLocateTask(CollegeBasicTask):
+class ColColEnrollmentTask(CollegeBasicTask):
     '''
     tab: 学生情况
     subtab: 招生明细
@@ -215,7 +215,7 @@ class ColLocateTask(CollegeBasicTask):
         FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class ColLocateTask(CollegeBasicTask):
+class ColEthnicityTask(CollegeBasicTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -228,7 +228,7 @@ class ColLocateTask(CollegeBasicTask):
         FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class ColLocateTask(CollegeFetchTask):
+class ColEthnicityStateTask(CollegeFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
@@ -242,3 +242,6 @@ class ColLocateTask(CollegeFetchTask):
             SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
             SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
             scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
+
+
+class
