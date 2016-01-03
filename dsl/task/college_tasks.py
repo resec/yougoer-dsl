@@ -67,16 +67,17 @@ class UnivLocateTask(UnivBasicTask):
         FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
 
 
-class UnivEnrollmentTask(UnivBasicTask):
+class UnivEnrolAdmisTask(UnivBasicTask):
     '''
     tab: 学生情况
-    subtab: 招生明细
+    subtab: 招生/录取情况
     '''
-    tkey = 'UnivEnrollmentTask'
+    tkey = 'UnivEnrolAdmisTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFTOTLT_GR, ai.EFTOTLT_UNGR, ai.ENRLT \
-        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+        self.mysql_template = "SELECT ai.APPLCN,ai.ADMSSN, ai.ADMSSN_PERC, ai.ENRLT, ai.ENRLT_PERC, \
+            ai.EFTOTLT_TOTAL, ai.EFTOTLT_GR, ai.EFTOTLT_UNGR \
+            FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
 class UnivEthnicityTask(UnivBasicTask):
@@ -212,17 +213,6 @@ class UnivTuitionCompareTask(UnivFetchTask):
             and scat.id = sdet.CATEGORY_ID \
             and scat.REGON = viewd.ID;"
 
-
-class UnivAdmiBasicTask(UnivBasicTask):
-    '''
-    tab: 录取
-    subtab: 录取情况
-    '''
-    tkey = 'UnivAdmiBasicTask'
-
-    def __init__(self):
-        self.mysql_template = "SELECT cai.APPLCN,cai.ADMSSN, cai.ADMSSN_PERC, cai.ENRLT, cai.ENRLT_PERC\
-            FROM college_ai as cai WHERE cai.UNITID=%(UNITID)s;"
 
 
 class UnivAdmiReqTask(UnivBasicTask):
