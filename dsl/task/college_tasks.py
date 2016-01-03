@@ -20,6 +20,24 @@ class CollegeBasicTask(object):
         yield mysql_syn_step
 
 
+class CollegeFetchTask(object):
+    '''
+    Basic College Task
+    '''
+
+    def __init__(self):
+        self.mysql_template = ""
+
+    def steps(self, param, result):
+        '''
+        param:UNITID
+        '''
+        mysql_syn_step = Step('MysqlHandler')
+        mysql_syn_step['template'] = self.mysql_template
+        mysql_syn_step['actiontype'] = 'fetch'
+        yield mysql_syn_step
+
+
 class CollegeFastFactsTask(CollegeBasicTask):
     '''
     Fast Facts/ Quick Stats
@@ -174,8 +192,53 @@ class CollegeCompareTask(CollegeBasicTask):
 
 
 class ColLocateTask(CollegeBasicTask):
+    '''
+    tab: 位置
+    subtab: 地图
+    '''
     tkey = 'ColLocateTask'
 
     def __init__(self):
         self.mysql_template = "SELECT ff.LATITUDE, ff.LONGITUD, ff.STABBR, ff.CITY, ff.ADDR, ff.GENTELE \
         FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
+
+
+class ColLocateTask(CollegeBasicTask):
+    '''
+    tab: 学生情况
+    subtab: 招生明细
+    '''
+    tkey = 'ColColEnrollmentTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFTOTLT_GR, ai.EFTOTLT_UNGR, ai.ENRLT \
+        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+
+
+class ColLocateTask(CollegeBasicTask):
+    '''
+    tab: 学生情况
+    subtab: 学生统计
+    selecttab: 人种
+    '''
+    tkey = 'ColEthnicityTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFWHITT, ai.EFBKAAT, ai.EFASIAT \
+        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+
+
+class ColLocateTask(CollegeFetchTask):
+    '''
+    tab: 学生情况
+    subtab: 学生统计
+    selecttab: 人种 同州平均
+    '''
+    tkey = 'ColEthnicityStateTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT sdet.*, sdic.VALUEEN \
+            FROM stati_details as sdet, stati_category as scat, stati_dict as sdic where sdet.CATEGORY_ID in (\
+            SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
+            SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
+            scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
