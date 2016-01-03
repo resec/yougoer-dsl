@@ -40,7 +40,7 @@ class UnivFetchTask(object):
 
 class UnivNameTask(UnivFetchTask):
 
-    tkey = 'CollegeNameTask'
+    tkey = 'UnivNameTask'
 
     def __init__(self):
         self.mysql_template = "SELECT cn.NAME FROM college_name as cn\
@@ -49,7 +49,7 @@ class UnivNameTask(UnivFetchTask):
 
 class UnivSlugTask(UnivBasicTask):
 
-    tkey = 'CollegeSlugTask'
+    tkey = 'UnivSlugTask'
 
     def __init__(self):
         self.mysql_template = "SELECT cn.UNITID FROM college_name as cn WHERE cn.SLUG = %(SLUG)s"
