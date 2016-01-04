@@ -102,11 +102,7 @@ class UnivEthnicityStateTask(UnivFetchTask):
     tkey = 'UnivEthnicityStateTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT sdet.*, sdic.VALUEEN \
-            FROM stati_details as sdet, stati_category as scat, stati_dict as sdic where sdet.CATEGORY_ID in (\
-            SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
-            SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
-            scat.FTYPEID = 28) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
+        self.mysql_template = ""
 
 
 class UnivGenderTask(UnivBasicTask):
@@ -131,11 +127,7 @@ class UnivGenderStateTask(UnivFetchTask):
     tkey = 'UnivGenderStateTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT sdet.*, sdic.VALUEEN \
-            FROM stati_details AS sdet, stati_category as scat, stati_dict as sdic where sdet.CATEGORY_ID in (\
-            SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
-            SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
-            scat.FTYPEID = 26) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
+        self.mysql_template = ""
 
 
 class UnivMajorNumTask(UnivBasicTask):
@@ -203,16 +195,7 @@ class UnivTuitionCompareTask(UnivFetchTask):
     tkey = 'UnivTuitionCompareTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT sdet.*, scat.REGON,viewd.VALUE_EN from stati_details as sdet, stati_category as scat,  view_dict_us_regon as viewd\
-            WHERE( sdet.CATEGORY_ID in (\
-            SELECT scat.id FROM stati_category as scat WHERE \
-            (scat.REGON = (SELECT OBEREG FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) or \
-            scat.REGON = (SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))\
-            and scat.TYPEID = 12)\
-            or sdet.CATEGORY_ID = (SELECT scat.id FROM stati_category as scat WHERE scat.REGON = 'US' and scat.TYPEID = 12))\
-            and scat.id = sdet.CATEGORY_ID \
-            and scat.REGON = viewd.ID;"
-
+        self.mysql_template = ""
 
 
 class UnivAdmiReqTask(UnivBasicTask):
@@ -233,6 +216,7 @@ class UnivAdmiUrlTask(UnivBasicTask):
     subtab: 申请信息
     '''
     tkey = 'UnivAdmiUrlTask'
+
     def __init__(self):
         self.mysql_template = "SELECT ff.WEBADDR, ff.ADMINURL, ff.APPLURL, ff.FAIDURL, ff.NPRICURL\
             FROM college_ff as ff WHERE ff.UNITID=%(UNITID)s;"
@@ -244,9 +228,52 @@ class UnivAdmiSticTask(UnivFetchTask):
     subtab: 录取情况 - 统计信息
     '''
     tkey = 'UnivAdmiSticTask'
+
     def __init__(self):
-        self.mysql_template = "SELECT sdet.*, sdic.VALUEEN from stati_details as sdet, stati_category as scat, stati_dict as sdic\
-            where sdet.CATEGORY_ID in (\
-            SELECT scat.id FROM stati_category as scat WHERE scat.LEVEL = 3 and scat.REGON = (\
-            SELECT STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) and\
-            scat.FTYPEID = 30) and sdet.CATEGORY_ID = scat.id and scat.TYPEID = sdic.id;"
+        self.mysql_template = ""
+
+
+class UnivRankTypeTask(UnivFetchTask):
+    '''
+    tab: 排名
+    subtab: 排名列表
+    stdin:'UnivRankTypeTask',{'UNITID':166027}
+    '''
+    tkey = 'UnivRankTypeTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT distinct rcat.RANKTYPE\
+            FROM rank_details as rdet, rank_category as rcat\
+            WHERE rdet.UNITID = %(UNITID)s and rdet.CATEGORY_ID in(\
+            SELECT id FROM rank_category WHERE FIELDTYPE = 'ALL') and rcat.id = rdet.CATEGORY_ID;"
+
+
+class UnivRankAllTask(UnivFetchTask):
+    '''
+    tab: 排名
+    subtab: 综合排名列表
+    stdin: 'UnivRankAllTask',{'UNITID':166027, 'RANKTYPE':'USNEWS'}
+    '''
+    tkey = 'UnivRankAllTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT rdet.RANK, rdet.YEAR FROM rank_details as rdet WHERE\
+            rdet.CATEGORY_ID in (SELECT id from rank_category WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE = 'ALL')\
+            and rdet.UNITID = %(UNITID)s order by rdet.YEAR;"
+
+
+class UnivSubRankTask(UnivFetchTask):
+    '''
+    tab: 排名
+    subtab: 热门专业当年排名列表
+    stdin: 'UnivSubRankTask',{'UNITID':166027, 'RANKTYPE':'USNEWS'}
+
+    '''
+    tkey = 'UnivSubRankTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT rdet.RANK, rdet.YEAR, rcat.FIELDTYPE FROM rank_details as rdet, rank_category as rcat\
+            WHERE rdet.CATEGORY_ID in (SELECT id from rank_category\
+                WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE != 'ALL' and USED = 1\
+                group by FIELDTYPE having YEAR=max(YEAR))\
+            and rdet.UNITID = %(UNITID)s and rcat.id = rdet.CATEGORY_ID order by rdet.RANK;"
