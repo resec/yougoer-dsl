@@ -265,8 +265,8 @@ class UnivRankAllTask(UnivFetchTask):
 class UnivSubRankTask(UnivFetchTask):
     '''
     tab: 排名
-    subtab: 热门专业当年排名列表
-    stdin: 'UnivSubRankTask',{'UNITID':166027, 'RANKTYPE':'USNEWS'}
+    subtab: 热门专业排名列表
+    stdin: 'UnivSubRankTask',{'UNITID':166027, 'RANKTYPE':'USNEWS', 'YEAR':2016}
 
     '''
     tkey = 'UnivSubRankTask'
@@ -275,5 +275,5 @@ class UnivSubRankTask(UnivFetchTask):
         self.mysql_template = "SELECT rdet.RANK, rdet.YEAR, rcat.FIELDTYPE FROM rank_details as rdet, rank_category as rcat\
             WHERE rdet.CATEGORY_ID in (SELECT id from rank_category\
                 WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE != 'ALL' and USED = 1\
-                group by FIELDTYPE having YEAR=max(YEAR))\
-            and rdet.UNITID = %(UNITID)s and rcat.id = rdet.CATEGORY_ID order by rdet.RANK;"
+                group by FIELDTYPE having YEAR=%(YEAR)s)\
+            and rdet.UNITID = %(UNITID)s and rcat.id = rdet.CATEGORY_ID and rdet.YEAR=%(YEAR)s order by rdet.RANK;"
