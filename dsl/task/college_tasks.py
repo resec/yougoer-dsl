@@ -272,8 +272,7 @@ class UnivSubRankTask(UnivFetchTask):
     tkey = 'UnivSubRankTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT rdet.RANK, rdet.YEAR, rcat.FIELDTYPE FROM rank_details as rdet, rank_category as rcat\
-            WHERE rdet.CATEGORY_ID in (SELECT id from rank_category\
-                WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE != 'ALL' and USED = 1\
-                group by FIELDTYPE having YEAR=%(YEAR)s)\
+        self.mysql_template = "SELECT rdet.RANK, rcat.FIELDTYPE FROM rank_details as rdet, rank_category as rcat\
+            WHERE rdet.CATEGORY_ID in (SELECT id from rank_category \
+                WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE != 'ALL' and USED = 1 and YEAR=%(YEAR)s) \
             and rdet.UNITID = %(UNITID)s and rcat.id = rdet.CATEGORY_ID and rdet.YEAR=%(YEAR)s order by rdet.RANK;"
