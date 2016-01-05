@@ -38,6 +38,41 @@ class UnivFetchTask(object):
         yield mysql_syn_step
 
 
+class StatiCategory(UnivFetchTask):
+    '''
+    #API1 获取学生情况类别
+    stdin: ('StatiCategory',{'TYPEID3':37})
+    '''
+    tkey = 'StatiCategory'
+
+    def __init__(self):
+        self.mysql_template = "SELECT dict.id\
+            from stati_dict as dict where dict.id in\
+            (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %(TYPEID3)s);"
+
+
+class StatiDictValue(object):
+    '''
+    #API3 根据ID获取DICT内容
+    stdin: ('StatiDictValue',{'IDS':[26, 28, 21, 22, 23, 24, 25]})
+    '''
+    tkey = 'StatiDictValue'
+
+    def steps(self, param, result):
+        template = "SELECT dict.id as 'KEY', dict.VALUECN as 'VALUE' from stati_dict as dict\
+            where dict.id in ("
+
+        ids = param['IDS']
+        for id in ids:
+            template += str(id) + ','
+        template = template[:-1] + ");"
+        print(template)
+        mysql_syn_step = Step('MysqlHandler')
+        mysql_syn_step['template'] = template
+        mysql_syn_step['actiontype'] = 'fetch'
+        yield mysql_syn_step
+
+
 class UnivNameTask(UnivFetchTask):
 
     tkey = 'UnivNameTask'
