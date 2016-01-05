@@ -11,7 +11,7 @@ class MysqlHandler(object):
         "database":"YOUGOER",
         "user":"root",
         "password":"chenzhongming",
-        "host":"192.168.0.101",
+        "host":"localhost",
         'charset':'utf8mb4',
     }
 
@@ -51,7 +51,7 @@ class MysqlHandler(object):
     def _execute(self, sql, param=None):
         cnx = self._get_connection()
         cursor = cnx.cursor(buffered=True, dictionary=True)
-        
+
         try:
             cursor.execute(operation=sql, params=param)
             rowcount = cursor.rowcount
@@ -60,11 +60,11 @@ class MysqlHandler(object):
             result = {'row_impacted':rowcount}
         except Exception as pe:
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
-        
+
         cursor.close()
         cnx.commit()
         cnx.close()
-        
+
         return result
 
 
@@ -75,13 +75,13 @@ class MysqlHandler(object):
     def _fetch(self, sql, param=None):
         cnx = self._get_connection()
         cursor = cnx.cursor(buffered=True)
-        
+
         try:
             cursor.execute(operation=sql, params=param)
             result = {'columns':cursor.column_names, 'rows':cursor.fetchall()}
         except Exception as pe:
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
-        
+
         cursor.close()
         cnx.commit()
         cnx.close()
@@ -95,17 +95,17 @@ class MysqlHandler(object):
     def _fetch_one(self, sql, param=None):
         cnx = self._get_connection()
         cursor = cnx.cursor(buffered=True, dictionary=True)
-        
+
         try:
             cursor.execute(operation=sql, params=param)
             result = cursor.fetchone()
         except Exception as pe:
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
-            
+
         cursor.close()
         cnx.commit()
         cnx.close()
-        
+
         if result is None:
             result = {}
 

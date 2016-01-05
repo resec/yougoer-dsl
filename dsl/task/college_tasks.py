@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from dsl.took import Step
 
-
+#################################################################################
+# Basic Class
+#################################################################################
 class UnivBasicTask(object):
     '''
     Basic College Task
@@ -38,6 +40,49 @@ class UnivFetchTask(object):
         yield mysql_syn_step
 
 
+#################################################################################
+# API
+#################################################################################
+class StatiCategory(UnivFetchTask):
+    '''
+    #API1 获取学生情况类别
+    stdin: ('StatiCategory',{'TYPEID3':37})
+    '''
+    tkey = 'StatiCategory'
+
+    def __init__(self):
+        self.mysql_template = "SELECT dict.id\
+            from stati_dict as dict where dict.id in\
+            (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %(TYPEID3)s);"
+
+
+
+
+class StatiDictValue(object):
+    '''
+    #API3 根据ID获取DICT内容
+    stdin: ('StatiDictValue',{'IDS':[26, 28, 21, 22, 23, 24, 25]})
+    '''
+    tkey = 'StatiDictValue'
+
+    def steps(self, param, result):
+        template = "SELECT dict.id as 'KEY', dict.VALUECN as 'VALUE' from stati_dict as dict\
+            where dict.id in ("
+
+        ids = param['IDS']
+        for id in ids:
+            template += str(id) + ','
+        template = template[:-1] + ");"
+        print(template)
+        mysql_syn_step = Step('MysqlHandler')
+        mysql_syn_step['template'] = template
+        mysql_syn_step['actiontype'] = 'fetch'
+        yield mysql_syn_step
+
+
+#################################################################################
+# !!! HEADER
+#################################################################################
 class UnivNameTask(UnivFetchTask):
 
     tkey = 'UnivNameTask'
@@ -55,6 +100,9 @@ class UnivSlugTask(UnivBasicTask):
         self.mysql_template = "SELECT cn.UNITID FROM college_name as cn WHERE cn.SLUG = %(SLUG)s"
 
 
+#################################################################################
+# 地理位置
+#################################################################################
 class UnivLocateTask(UnivBasicTask):
     '''
     tab: 位置
@@ -67,7 +115,9 @@ class UnivLocateTask(UnivBasicTask):
         self.mysql_template = "SELECT ff.LATITUDE, ff.LONGITUD, ff.STABBR, ff.CITY, ff.ADDR, ff.GENTELE \
         FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s;"
 
-
+#################################################################################
+# 学生情况
+#################################################################################
 class UnivEnrolAdmisTask(UnivBasicTask):
     '''
     tab: 学生情况
@@ -81,50 +131,44 @@ class UnivEnrolAdmisTask(UnivBasicTask):
             FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class UnivEthnicityTask(UnivBasicTask):
+class UnivEnrolAdmisStatiTask(UnivFetchTask):
     '''
     tab: 学生情况
-    subtab: 学生统计
-    selecttab: 人种
+    subtab: 招生情况
+    selecttab: 招生统计
+    stdin: ('UnivEnrolAdmisStatiTask',{'UNITID':166027})
     '''
-    tkey = 'UnivEthnicityTask'
+    tkey = 'UnivEnrolAdmisStatiTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFWHITT, ai.EFBKAAT, ai.EFASIAT \
-        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+            sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = 39 and TYPEID1 = 20) and\
+            (sdet.REGON = 'US'\
+            or sdet.REGON = %(UNITID)s\
+            or sdet.REGON = (SELECT ff.OBEREG FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s)\
+            or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
 class UnivEthnicityStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
-    selecttab: 人种 同州平均
+    selecttab: 人种统计
+    stdin: ('UnivEthnicityStateTask',{'UNITID':166027, 'TYPEID2': 28})
     '''
     tkey = 'UnivEthnicityStateTask'
 
     def __init__(self):
-        self.mysql_template = ""
-
-
-class UnivGenderTask(UnivBasicTask):
-    '''
-    tab: 学生情况
-    subtab: 学生统计
-    selecttab: 性别
-    stdin: 'UnivGenderTask',{'UNITID':166027}
-    '''
-    tkey = 'UnivGenderTask'
-
-    def __init__(self):
-        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFTOTLM, ai.EFTOTLW \
-        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+            sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(TYPEID2)s) and\
+            (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
 class UnivGenderStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
-    selecttab: 性别 同州平均
+    selecttab: 性别-州统计
     stdin: 'UnivGenderStateTask',{'UNITID':166027, 'TYPEID2': 26}
     '''
     tkey = 'UnivGenderStateTask'
@@ -135,6 +179,9 @@ class UnivGenderStateTask(UnivFetchTask):
             (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
+#################################################################################
+# 专业情况
+#################################################################################
 class UnivMajorNumTask(UnivBasicTask):
     '''
     tab: 专业
@@ -165,11 +212,14 @@ class UnivMajorTask(UnivFetchTask):
             GROUP BY ccomp.CIPCODE ORDER BY CTOTALT;"
 
 
+#################################################################################
+# 费用
+#################################################################################
 class UnivTuitionOnCampusTask(UnivBasicTask):
     '''
     tab: 学费
     subtab: 基本费用
-    selecttab: 住校基本费用
+    selecttab: 校内基本费用
     '''
     tkey = 'UnivTuitionOnCampusTask'
 
@@ -182,7 +232,7 @@ class UnivTuitionOffCampusTask(UnivBasicTask):
     '''
     tab: 学费
     subtab: 基本费用
-    selecttab: 住校基本费用
+    selecttab: 校外基本费用
     '''
     tkey = 'UnivTuitionOffCampusTask'
 
@@ -196,13 +246,22 @@ class UnivTuitionCompareTask(UnivFetchTask):
     tab: 学费
     subtab: 基本费用
     selecttab: 学费对比
+    stdin:('UnivTuitionCompareTask',{'UNITID':166027})
     '''
     tkey = 'UnivTuitionCompareTask'
 
     def __init__(self):
-        self.mysql_template = ""
+        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+        sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = 31) and\
+        (sdet.REGON = 'US'\
+        or sdet.REGON = %(UNITID)s\
+        or sdet.REGON = (SELECT ff.OBEREG FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s)\
+        or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
+#################################################################################
+# 录取情况
+#################################################################################
 class UnivAdmiReqTask(UnivBasicTask):
     '''
     tab: 录取
@@ -238,6 +297,9 @@ class UnivAdmiSticTask(UnivFetchTask):
         self.mysql_template = ""
 
 
+#################################################################################
+# 排名
+#################################################################################
 class UnivRankTypeTask(UnivFetchTask):
     '''
     tab: 排名
@@ -281,3 +343,9 @@ class UnivSubRankTask(UnivFetchTask):
             WHERE rdet.CATEGORY_ID in (SELECT id from rank_category \
                 WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE != 'ALL' and USED = 1 and YEAR=%(YEAR)s) \
             and rdet.UNITID = %(UNITID)s and rcat.id = rdet.CATEGORY_ID and rdet.YEAR=%(YEAR)s order by rdet.RANK;"
+
+
+
+#################################################################################
+# 基本信息
+#################################################################################
