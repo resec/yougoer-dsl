@@ -116,50 +116,26 @@ class UnivEnrolAdmisTask(UnivBasicTask):
             FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
 
-class UnivEthnicityTask(UnivBasicTask):
-    '''
-    tab: 学生情况
-    subtab: 学生统计
-    selecttab: 人种
-    '''
-    tkey = 'UnivEthnicityTask'
-
-    def __init__(self):
-        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFWHITT, ai.EFBKAAT, ai.EFASIAT \
-        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
-
-
 class UnivEthnicityStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
-    selecttab: 人种 同州平均
+    selecttab: 人种统计
+    stdin: ('UnivEthnicityStateTask',{'UNITID':166027, 'TYPEID2': 28})
     '''
     tkey = 'UnivEthnicityStateTask'
 
     def __init__(self):
-        self.mysql_template = ""
-
-
-class UnivGenderTask(UnivBasicTask):
-    '''
-    tab: 学生情况
-    subtab: 学生统计
-    selecttab: 性别
-    stdin: 'UnivGenderTask',{'UNITID':166027}
-    '''
-    tkey = 'UnivGenderTask'
-
-    def __init__(self):
-        self.mysql_template = "SELECT ai.EFTOTLT_TOTAL, ai.EFTOTLM, ai.EFTOTLW \
-        FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
+        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+            sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(TYPEID2)s) and\
+            (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
 class UnivGenderStateTask(UnivFetchTask):
     '''
     tab: 学生情况
     subtab: 学生统计
-    selecttab: 性别 同州平均
+    selecttab: 性别-州统计
     stdin: 'UnivGenderStateTask',{'UNITID':166027, 'TYPEID2': 26}
     '''
     tkey = 'UnivGenderStateTask'
