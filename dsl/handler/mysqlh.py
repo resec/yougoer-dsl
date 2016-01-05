@@ -1,6 +1,5 @@
 
 from mysql.connector import connect, Error, errorcode
-from mysql.connector.errors import ProgrammingError
 
 class MysqlHandler(object):
 
@@ -83,7 +82,6 @@ class MysqlHandler(object):
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
 
         cursor.close()
-        cnx.commit()
         cnx.close()
 
         if result is None:
@@ -103,7 +101,6 @@ class MysqlHandler(object):
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
 
         cursor.close()
-        cnx.commit()
         cnx.close()
 
         if result is None:
