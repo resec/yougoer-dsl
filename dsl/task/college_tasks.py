@@ -59,6 +59,7 @@ class UnivLocateTask(UnivBasicTask):
     '''
     tab: 位置
     subtab: 地图
+    stdin:('UnivLocateTask',{'UNITID':166027})
     '''
     tkey = 'UnivLocateTask'
 
