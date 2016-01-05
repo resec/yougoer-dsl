@@ -1,5 +1,30 @@
 
 from mysql.connector import connect, Error, errorcode
+from mysql.connector.conversion import MySQLConverter
+
+
+class DSLMySQLConverter(MySQLConverter):
+    """
+    Added custom handling convert method for list/set/tuple
+    """
+    
+    def _list_to_mysql(self, value):
+        """Dedicate to self._sequence_to_mysql"""
+        return self._sequence_to_mysql(value)
+        
+    def _set_to_mysql(self, value):
+        """Dedicate to self._sequence_to_mysql"""
+        return self._sequence_to_mysql(value)
+    
+    def _tuple_to_mysql(self, value):
+        """Dedicate to self._sequence_to_mysql"""
+        return self._sequence_to_mysql(value)
+        
+    def _sequence_to_mysql(self, value):
+        """Dedicate to self._sequence_to_mysql"""
+        n = [str(self.to_mysql(item)) for item in value]
+        return b"(" + self._unicode_to_mysql(",".join(n)) + b")"
+
 
 class MysqlHandler(object):
 
@@ -10,8 +35,9 @@ class MysqlHandler(object):
         "database":"YOUGOER",
         "user":"root",
         "password":"chenzhongming",
-        "host":"localhost",
+        "host":"192.168.0.101",
         'charset':'utf8mb4',
+        'converter_class':DSLMySQLConverter,
     }
 
     action_method_map = {
@@ -58,6 +84,8 @@ class MysqlHandler(object):
                 rowcount = 0
             result = {'row_impacted':rowcount}
         except Exception as pe:
+            import traceback
+            traceback.print_exc()
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
 
         cursor.close()
@@ -79,6 +107,8 @@ class MysqlHandler(object):
             cursor.execute(operation=sql, params=param)
             result = {'columns':cursor.column_names, 'rows':cursor.fetchall()}
         except Exception as pe:
+            import traceback
+            traceback.print_exc()
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
 
         cursor.close()
@@ -98,6 +128,8 @@ class MysqlHandler(object):
             cursor.execute(operation=sql, params=param)
             result = cursor.fetchone()
         except Exception as pe:
+            import traceback
+            traceback.print_exc()
             result = dict(error='error in executing sql %s with param %s, error: %s' % (sql, param, str(pe)))
 
         cursor.close()
@@ -107,3 +139,5 @@ class MysqlHandler(object):
             result = {}
 
         return result
+
+
