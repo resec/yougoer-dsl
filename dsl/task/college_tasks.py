@@ -111,6 +111,7 @@ class UnivGenderTask(UnivBasicTask):
     tab: 学生情况
     subtab: 学生统计
     selecttab: 性别
+    stdin: 'UnivGenderTask',{'UNITID':166027}
     '''
     tkey = 'UnivGenderTask'
 
@@ -124,11 +125,14 @@ class UnivGenderStateTask(UnivFetchTask):
     tab: 学生情况
     subtab: 学生统计
     selecttab: 性别 同州平均
+    stdin: 'UnivGenderStateTask',{'UNITID':166027, 'TYPEID2': 26}
     '''
     tkey = 'UnivGenderStateTask'
 
     def __init__(self):
-        self.mysql_template = ""
+        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+            sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(TYPEID2)s) and\
+            (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
 class UnivMajorNumTask(UnivBasicTask):
