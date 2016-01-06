@@ -49,7 +49,7 @@ class StatiCategoryL3(UnivFetchTask):
     stdin: ('StatiCategoryL3',{'ID':37})
     '''
     tkey = 'StatiCategoryL3'
-    
+
     _type_key_map = {
         'student':37
     }
@@ -58,7 +58,7 @@ class StatiCategoryL3(UnivFetchTask):
         self.mysql_template = "SELECT dict.id\
             from stati_dict as dict where dict.id in\
             (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %d);"
-            
+
     def steps(self, param, result):
         '''
         param:UNITID
@@ -175,25 +175,25 @@ class UnivEthnicityStateTask(UnivFetchTask):
 
 
 class StatiBaseTask(UnivFetchTask):
-    
+
     '''
     获取统计信息基本任务
     stdin: '<TASK_NAME>',{[FIELDS:['cnt','sum','max','var']]}
     '''
-        
+
     def steps(self, param, result):
         if 'FIELDS' in param and type(param['FIELDS']) == type(list()):
             fields = param['FIELDS']
             field_template = ','.join(fields)
         else:
             field_template = '*'
-        
+
         template = self.mysql_template.replace('<field_template>', field_template)
         mysql_syn_step = Step('MysqlHandler')
         mysql_syn_step['template'] = template
         mysql_syn_step['actiontype'] = 'fetch'
         yield mysql_syn_step
-        
+
 
 class StatiStateTask(StatiBaseTask):
     '''
@@ -260,10 +260,15 @@ class UnivMajorTask(UnivFetchTask):
     tkey = 'UnivMajorTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT CIPCODE, sum(CTOTALT) as CTOTALT\
-            FROM college_comp as ccomp\
-            WHERE ccomp.UNITID = %(UNITID)s and ccomp.CIPCODE != 99\
-            GROUP BY ccomp.CIPCODE ORDER BY CTOTALT;"
+        self.mysql_template = "SELECT\
+                cip.VALUE_CN as 'CIPCODE', SUM(CTOTALT) AS CTOTALT\
+            FROM\
+                college_comp AS ccomp, dict_US_CIPCODE as cip\
+            WHERE\
+                ccomp.UNITID = 166027\
+                    AND ccomp.CIPCODE != 99 AND ccomp.CIPCODE = cip.id\
+            GROUP BY ccomp.CIPCODE\
+            ORDER BY CTOTALT;"
 
 
 #################################################################################
