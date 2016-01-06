@@ -55,9 +55,12 @@ class StatiCategoryL3(UnivFetchTask):
     }
 
     def __init__(self):
-        self.mysql_template = "SELECT dict.id\
-            from stati_dict as dict where dict.id in\
-            (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %d);"
+        self.mysql_template = (
+            "SELECT dict.id "
+            "FROM stati_dict AS dict "
+            "WHERE dict.id in "
+            "(SELECT cat.TYPEID2 FROM stati_category AS cat WHERE cat.TYPEID3 = %d)"
+        )
 
     def steps(self, param, result):
         '''
@@ -96,10 +99,13 @@ class StatiDictValue(object):
 class UnivNameTask(UnivFetchTask):
 
     tkey = 'UnivNameTask'
-
+    
     def __init__(self):
-        self.mysql_template = "SELECT cn.NAME FROM college_name as cn\
-            WHERE cn.UNITID = %(UNITID)s and (cn.LANG = 'EN' or cn.LANG = 'CN')"
+        self.mysql_template = (
+            "SELECT cn.LANG, cn.NAME "
+            "FROM college_name as cn "
+            "WHERE cn.UNITID = %(UNITID)s and cn.LANG in %(LANG)s"
+        )
 
 
 class UnivSlugTask(UnivBasicTask):
@@ -107,7 +113,12 @@ class UnivSlugTask(UnivBasicTask):
     tkey = 'UnivSlugTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT cn.UNITID FROM college_name as cn WHERE cn.SLUG = %(SLUG)s"
+        self.mysql_template = (
+            "SELECT cn.UNITID "
+            "FROM college_name as cn "
+            "WHERE cn.SLUG = %(SLUG)s "
+            "LIMIT 1"
+        )
 
 
 #################################################################################
