@@ -43,19 +43,30 @@ class UnivFetchTask(object):
 #################################################################################
 # API
 #################################################################################
-class StatiCategory(UnivFetchTask):
+class StatiCategoryL3(UnivFetchTask):
     '''
     #API1 获取学生情况类别
-    stdin: ('StatiCategory',{'TYPEID3':37})
+    stdin: ('StatiCategoryL3',{'ID':37})
     '''
-    tkey = 'StatiCategory'
+    tkey = 'StatiCategoryL3'
+    
+    _type_key_map = {
+        'student':37
+    }
 
     def __init__(self):
         self.mysql_template = "SELECT dict.id\
             from stati_dict as dict where dict.id in\
-            (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %(TYPEID3)s);"
-
-
+            (select cat.TYPEID2 from stati_category as cat where cat.TYPEID3 = %d);"
+            
+    def steps(self, param, result):
+        '''
+        param:UNITID
+        '''
+        mysql_syn_step = Step('MysqlHandler')
+        mysql_syn_step['template'] = self.mysql_template % self._type_key_map[param['ID']]
+        mysql_syn_step['actiontype'] = 'fetch'
+        yield mysql_syn_step
 
 
 class StatiDictValue(object):
@@ -73,7 +84,6 @@ class StatiDictValue(object):
         for id in ids:
             template += str(id) + ','
         template = template[:-1] + ");"
-        print(template)
         mysql_syn_step = Step('MysqlHandler')
         mysql_syn_step['template'] = template
         mysql_syn_step['actiontype'] = 'fetch'
@@ -126,7 +136,7 @@ class UnivEnrolAdmisTask(UnivBasicTask):
     tkey = 'UnivEnrolAdmisTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT ai.APPLCN,ai.ADMSSN, ai.ADMSSN_PERC, ai.ENRLT, ai.ENRLT_PERC, \
+        self.mysql_template = "SELECT ai.APPLCN,ai.ADMSSN, ai.ENRLT, \
             ai.EFTOTLT_TOTAL, ai.EFTOTLT_GR, ai.EFTOTLT_UNGR \
             FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
@@ -159,24 +169,68 @@ class UnivEthnicityStateTask(UnivFetchTask):
     tkey = 'UnivEthnicityStateTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
+        self.mysql_template = "SELECT <field_template> FROM stati_details as sdet WHERE\
             sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(TYPEID2)s) and\
             (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
 
 
-class UnivGenderStateTask(UnivFetchTask):
+class StatiBaseTask(UnivFetchTask):
+    
     '''
-    tab: 学生情况
-    subtab: 学生统计
-    selecttab: 性别-州统计
-    stdin: 'UnivGenderStateTask',{'UNITID':166027, 'TYPEID2': 26}
+    获取统计信息基本任务
+    stdin: '<TASK_NAME>',{[FIELDS:['cnt','sum','max','var']]}
     '''
-    tkey = 'UnivGenderStateTask'
+        
+    def steps(self, param, result):
+        if 'FIELDS' in param and type(param['FIELDS']) == type(list()):
+            fields = param['FIELDS']
+            field_template = ','.join(fields)
+        else:
+            field_template = '*'
+        
+        template = self.mysql_template.replace('<field_template>', field_template)
+        mysql_syn_step = Step('MysqlHandler')
+        mysql_syn_step['template'] = template
+        mysql_syn_step['actiontype'] = 'fetch'
+        yield mysql_syn_step
+        
+
+class StatiStateTask(StatiBaseTask):
+    '''
+    获取州统计信息
+    stdin: 'StatiStateTask',{'UNITID':166027, 'ID': 26}
+    '''
+    tkey = 'StatiStateTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT * FROM stati_details as sdet WHERE\
-            sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(TYPEID2)s) and\
-            (sdet.REGON = %(UNITID)s or sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s))"
+        self.mysql_template = (
+            "SELECT <field_template>, scat.TYPEID1 "
+            "FROM stati_details as sdet, stati_category as scat "
+            "WHERE sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(ID)s) "
+            "AND sdet.REGON = (SELECT ff.STABBR FROM college_ff as ff WHERE ff.UNITID = %(UNITID)s) "
+            "AND sdet.LEVEL = 3 "
+            "AND sdet.CATEGORY_ID = scat.id "
+            "ORDER BY scat.TYPEID1"
+            )
+
+
+class StatiUnivTask(StatiBaseTask):
+    '''
+    获取本校统计信息
+    stdin: 'StatiUnivTask',{'UNITID':166027, 'ID': 26}
+    '''
+    tkey = 'StatiUnivTask'
+
+    def __init__(self):
+        self.mysql_template = (
+            "SELECT <field_template>, scat.TYPEID1 "
+            "FROM stati_details as sdet, stati_category as scat "
+            "WHERE sdet.CATEGORY_ID in (SELECT id FROM stati_category WHERE TYPEID2 = %(ID)s) "
+            "AND sdet.REGON = %(UNITID)s "
+            "AND sdet.LEVEL = 5 "
+            "AND sdet.CATEGORY_ID = scat.id "
+            "ORDER BY scat.TYPEID1"
+            )
 
 
 #################################################################################
