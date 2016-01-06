@@ -126,7 +126,7 @@ class UnivEnrolAdmisTask(UnivBasicTask):
     tkey = 'UnivEnrolAdmisTask'
 
     def __init__(self):
-        self.mysql_template = "SELECT ai.APPLCN,ai.ADMSSN, ai.ADMSSN_PERC, ai.ENRLT, ai.ENRLT_PERC, \
+        self.mysql_template = "SELECT ai.APPLCN,ai.ADMSSN, ai.ENRLT, \
             ai.EFTOTLT_TOTAL, ai.EFTOTLT_GR, ai.EFTOTLT_UNGR \
             FROM college_ai as ai WHERE ai.UNITID = %(UNITID)s;"
 
@@ -266,6 +266,7 @@ class UnivAdmiReqTask(UnivBasicTask):
     '''
     tab: 录取
     subtab: 录取标准
+    stdin: ('UnivAdmiReqTask',{'UNITID':166027})
     '''
     tkey = 'UnivAdmiReqTask'
 
