@@ -1,5 +1,6 @@
 
 from mysql.connector import connect, Error, errorcode
+from mysql.connector.cursor import MySQLCursorBufferedDict
 from mysql.connector.conversion import MySQLConverter
 
 
@@ -8,22 +9,68 @@ class DSLMySQLConverter(MySQLConverter):
     Added custom handling convert method for list/set/tuple
     """
     
-    def _list_to_mysql(self, value):
-        """Dedicate to self._sequence_to_mysql"""
-        return self._sequence_to_mysql(value)
-        
-    def _set_to_mysql(self, value):
-        """Dedicate to self._sequence_to_mysql"""
-        return self._sequence_to_mysql(value)
+    def process(self, value):
+        """
+        Do type convert, escape, and qoute to input values
+        When face list/set/tuple, iterate through it and process its elements
+        At the end, join the elements with ',', starting '(', ending ')' 
+        """
+        if isinstance(value, (list, set, tuple)):
+            n = [self.process(item) for item in value]
+            conv = b"(" + b",".join(n) + b")"
+        else:            
+            conv = self.to_mysql(value)
+            conv = self.escape(conv)
+            conv = self.quote(conv)
+        return conv
     
-    def _tuple_to_mysql(self, value):
-        """Dedicate to self._sequence_to_mysql"""
-        return self._sequence_to_mysql(value)
+    # def _list_to_mysql(self, value):
+    #     """Dedicate to self._sequence_to_mysql"""
+    #     return self._sequence_to_mysql(value)
         
-    def _sequence_to_mysql(self, value):
-        """Dedicate to self._sequence_to_mysql"""
-        n = [str(self.to_mysql(item)) for item in value]
-        return b"(" + self._unicode_to_mysql(",".join(n)) + b")"
+    # def _set_to_mysql(self, value):
+    #     """Dedicate to self._sequence_to_mysql"""
+    #     return self._sequence_to_mysql(value)
+    
+    # def _tuple_to_mysql(self, value):
+    #     """Dedicate to self._sequence_to_mysql"""
+    #     return self._sequence_to_mysql(value)
+        
+    # def _sequence_to_mysql(self, value):
+    #     """Dedicate to self._sequence_to_mysql"""
+    #     n = [str(self.to_mysql(item)) for item in value]
+    #     return b"(" + self._unicode_to_mysql(",".join(n)) + b")"
+
+
+class DSLMySQLCursor(MySQLCursorBufferedDict):
+    """
+    Added custom handling in processing params, which delicate all steps into convertor
+    """
+    
+    def _process_params_dict(self, params):
+        """Process query parameters given as dictionary"""
+        try:
+            process = self._connection.converter.process
+            res = {}
+            for key, value in list(params.items()):
+                res["%({0})s".format(key).encode()] = process(value)
+        except Exception as err:
+            raise errors.ProgrammingError(
+                "Failed processing pyformat-parameters; %s" % err)
+        else:
+            return res
+
+    def _process_params(self, params):
+        """Process query parameters."""
+        try:
+            res = params
+            process = self._connection.converter.process
+            res = [process(i) for i in res]
+        except Exception as err:
+            raise errors.ProgrammingError(
+                "Failed processing format-parameters; %s" % err)
+        else:
+            return tuple(res)
 
 
 class MysqlHandler(object):
@@ -75,7 +122,7 @@ class MysqlHandler(object):
 
     def _execute(self, sql, param=None):
         cnx = self._get_connection()
-        cursor = cnx.cursor(buffered=True, dictionary=True)
+        cursor = cnx.cursor(buffered=True, dictionary=True, cursor_class=DSLMySQLCursor)
 
         try:
             cursor.execute(operation=sql, params=param)
@@ -101,7 +148,7 @@ class MysqlHandler(object):
 
     def _fetch(self, sql, param=None):
         cnx = self._get_connection()
-        cursor = cnx.cursor(buffered=True, dictionary=True)
+        cursor = cnx.cursor(buffered=True, dictionary=True, cursor_class=DSLMySQLCursor)
 
         try:
             cursor.execute(operation=sql, params=param)
@@ -122,7 +169,7 @@ class MysqlHandler(object):
 
     def _fetch_one(self, sql, param=None):
         cnx = self._get_connection()
-        cursor = cnx.cursor(buffered=True, dictionary=True)
+        cursor = cnx.cursor(buffered=True, dictionary=True, cursor_class=DSLMySQLCursor)
 
         try:
             cursor.execute(operation=sql, params=param)
