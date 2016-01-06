@@ -101,11 +101,11 @@ class MysqlHandler(object):
 
     def _fetch(self, sql, param=None):
         cnx = self._get_connection()
-        cursor = cnx.cursor(buffered=True)
+        cursor = cnx.cursor(buffered=True, dictionary=True)
 
         try:
             cursor.execute(operation=sql, params=param)
-            result = {'columns':cursor.column_names, 'rows':cursor.fetchall()}
+            result = {'rows':cursor.fetchall()}
         except Exception as pe:
             import traceback
             traceback.print_exc()
@@ -115,7 +115,7 @@ class MysqlHandler(object):
         cnx.close()
 
         if result is None:
-            result = {'columns':[], 'rows':{}}
+            result = {'rows':{}}
 
         return result
 

@@ -7,7 +7,7 @@ class DSLJSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, decimal.Decimal):
-            return str(o)
+            return float(o)
         return super(DecimalEncoder, self).default(o)
 
 
