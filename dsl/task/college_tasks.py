@@ -394,7 +394,7 @@ class UnivRankTypeTask(UnivFetchTask):
         self.mysql_template = "SELECT distinct rcat.RANKTYPE\
             FROM rank_details as rdet, rank_category as rcat\
             WHERE rdet.UNITID = %(UNITID)s and rdet.CATEGORY_ID in(\
-            SELECT id FROM rank_category WHERE FIELDTYPE = 'ALL') and rcat.id = rdet.CATEGORY_ID;"
+            SELECT id FROM rank_category WHERE FIELDTYPE = 1) and rcat.id = rdet.CATEGORY_ID;"
 
 
 class UnivRankAllTask(UnivFetchTask):
@@ -407,7 +407,7 @@ class UnivRankAllTask(UnivFetchTask):
 
     def __init__(self):
         self.mysql_template = "SELECT rdet.RANK, rdet.YEAR FROM rank_details as rdet WHERE\
-            rdet.CATEGORY_ID in (SELECT id from rank_category WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE = 'ALL')\
+            rdet.CATEGORY_ID in (SELECT id from rank_category WHERE RANKTYPE = %(RANKTYPE)s and FIELDTYPE = 1)\
             and rdet.UNITID = %(UNITID)s order by rdet.YEAR;"
 
 
@@ -421,20 +421,22 @@ class UnivSubRankTask(UnivFetchTask):
 
     def __init__(self):
         self.mysql_template = (
-            "SELECT rdet.YEAR, rdet.RANK, rcat.FIELDTYPE FROM rank_details as rdet, rank_category as rcat " 
+            "SELECT rdet.YEAR, rdet.RANK, rdic.VALUE_CN as FIELDTYPE "
+            "FROM rank_details as rdet, rank_category as rcat, rank_dict as rdic "
             "WHERE (rdet.CATEGORY_ID, rdet.YEAR) in ( "
-					"SELECT id, max(YEAR) " 
+					"SELECT id, max(YEAR) "
                     "FROM rank_category "
-                    "WHERE RANKTYPE = %(RANKTYPE)s " 
-                    "AND FIELDTYPE != 'ALL' "
+                    "WHERE RANKTYPE = %(RANKTYPE)s "
+                    "AND FIELDTYPE != 1 "
                     "AND YEAR <= %(YEAR)s AND USED = 1 "
                     "GROUP BY FIELDTYPE "
                 ")"
-            "AND rdet.UNITID = %(UNITID)s "  
-            "AND rcat.id = rdet.CATEGORY_ID " 
+            "AND rdet.UNITID = %(UNITID)s "
+            "AND rcat.id = rdet.CATEGORY_ID "
+            "AND rcat.FIELDTYPE = rdic.id "
             "ORDER BY rdet.RANK"
         )
-            
+
 
 
 
