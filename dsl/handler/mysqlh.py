@@ -82,7 +82,7 @@ class MysqlHandler(object):
         "database":"YOUGOER",
         "user":"root",
         "password":"chenzhongming",
-        "host":"192.168.0.101",
+        "host":"192.168.0.100",
         'charset':'utf8mb4',
         'converter_class':DSLMySQLConverter,
     }
