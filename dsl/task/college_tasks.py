@@ -99,7 +99,7 @@ class StatiDictValue(object):
 class UnivNameTask(UnivFetchTask):
 
     tkey = 'UnivNameTask'
-    
+
     def __init__(self):
         self.mysql_template = (
             "SELECT cn.LANG, cn.NAME "
@@ -345,6 +345,17 @@ class UnivAdmiReqTask(UnivBasicTask):
         FROM college_ai as cai WHERE cai.UNITID=%(UNITID)s;"
 
 
+class UnivAdmiPayTask(UnivBasicTask):
+    '''
+    tab: 录取
+    subtab: 申请费用
+    stdin: ('UnivAdmiPayTask',{'UNITID':166027})
+    '''
+    tkey = 'UnivAdmiPayTask'
+    def __init__(self):
+        self.mysql_template = "SELECT ctui.APPLFEEU, ctui.APPLFEEG FROM college_tuition as ctui WHERE ctui.UNITID=%(UNITID)s;"
+
+
 class UnivAdmiUrlTask(UnivBasicTask):
     '''
     tab: 录取
@@ -405,7 +416,6 @@ class UnivSubRankTask(UnivFetchTask):
     tab: 排名
     subtab: 热门专业排名列表
     stdin: 'UnivSubRankTask',{'UNITID':166027, 'RANKTYPE':'USNEWS', 'YEAR':2016}
-
     '''
     tkey = 'UnivSubRankTask'
 
@@ -431,3 +441,21 @@ class UnivSubRankTask(UnivFetchTask):
 #################################################################################
 # 基本信息
 #################################################################################
+class UnivIntroTask(UnivBasicTask):
+    '''
+    tab: 基本信息
+    subtab: 简介
+    stdin: ('UnivIntroTask',{'UNITID':166027})
+    '''
+    tkey = 'UnivIntroTask'
+
+    def __init__(self):
+        self.mysql_template = "SELECT cff.INSTSIZE, dins.VALUE_EN as INSTSIZE_V, cff.LOCALE, dloc.VALUE_CN as LOCALE_V, \
+                cai.L4GR150, cai.STUFACR, ctui.CHG3AY3, cai.EFTOTLM, cai.EFTOTLW, cai.EFTOTLT_GR, \
+                cai.EFTOTLT_UNGR, cai.APPLCN, cai.ADMSSN\
+            FROM \
+                college_ff as cff, college_ai as cai, college_tuition as ctui, \
+                dict_US_LOCALE as dloc, dict_US_INSTSIZE as dins\
+            WHERE \
+                cff.UNITID = 166027 and cai.UNITID = 166027 and ctui.UNITID = %(UNITID)s\
+                and cff.LOCALE = dloc.id and cff.INSTSIZE = dins.id;"
